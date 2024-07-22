@@ -1,0 +1,84 @@
+name: CardiacClassifier
+target_size: &target_size !!python/tuple [1, 13, 96, 96]
+train_batch_size: &tbatch_size 32
+downstream_batch_size: &dbatch_size 100
+checkpoint_path: &checkpoint_path ./projects/cardiac_classifier/weights/cardiac_classifier/
+#
+# Experiment
+#
+experiment:
+  name: CardiacClassifier
+  task: train
+  weights: #'./projects/cardiac_classifier/weights/cardiac_classifier/<run>/latest_model.pt'
+#
+device: gpu
+configurator:
+  module_name: core.Configurator
+  class_name: DLConfigurator
+  params:
+#
+# Model
+#
+model:
+  module_name: model_zoo.cardiac_classifier
+  class_name: CardiacClassifier
+  params:
+    input_size: *target_size
+    input_dim: 3
+    layer_channels: 8
+    layer_multiplier:
+      - 1
+      - 2
+      - 3
+      - 4
+    layer_attention:
+      - False
+      - False
+      - False
+      - False
+    residual_blocks: 2
+    sample_resnet: False
+    dropout: 0.1
+    normalization: 'group'
+    normalization_groups: 8
+
+#
+# Trainer
+#
+trainer:
+  module_name: projects.cardiac_classifier.Trainer
+  class_name: PTrainer
+  params:
+    input_size: *target_size
+    checkpoint_path: *checkpoint_path
+    nr_epochs: 20
+    esed_dim: 9
+    # Loss
+    loss:
+      module_name: torch.nn
+      class_name: BCEWithLogitsLoss
+      params:
+    optimizer_params:
+      lr: 1.0e-5
+  # Data Loader
+  data_loader:
+    module_name: data.cardiac_mri_loader3d
+    class_name: CardiacMRILoader
+    params:
+      data_path: 'path/to/data/folder'
+
+# Downstream tasks
+downstream_tasks:
+  test:
+    module_name: projects.cardiac_classifier.DownstreamEvaluator
+    class_name: PDownstreamEvaluator
+    checkpoint_path: *checkpoint_path
+    data_loader:
+      module_name: data.cardiac_mri_loader3d
+      class_name: CardiacMRILoader
+      params:
+        data_path:  'path/to/data/folder'
+      datasets:
+        test:
+          classes:
+            - test

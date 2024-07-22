@@ -1,0 +1,139 @@
+name: KL 4x C128 DP e10
+target_size: &target_size !!python/tuple [1, 13, 96, 96]
+train_batch_size: &tbatch_size 256
+downstream_batch_size: &dbatch_size 32
+checkpoint_path: &checkpoint_path ./projects/cardiac_diffusion/weights/cardiac_diffusion/
+#
+# Experiment
+#
+experiment:
+  name: Cardiac Diffusion
+  task: train
+  weights: # './projects/cardiac_diffusion/weights/cardiac_diffusion/<run>/latest_model.pt'
+#
+device: gpu
+configurator:
+  module_name: core.Configurator
+  class_name: DLConfigurator
+  params:
+#
+# Model
+#
+model:
+  module_name: model_zoo.ldm
+  class_name: LatentDiffusion
+  params:
+    T: 150
+    #guidance: 3
+    beta_min: 1.0e-4
+    beta_max: 7.0e-2
+    input_size: *target_size
+    input_dim: 3
+    layer_channels: 128
+    layer_multiplier:
+      - 1
+      - 2
+      - 3
+#      - 4
+    layer_attention:
+      - False
+      - True
+      - True
+#      - True
+    residual_blocks: 2
+    sample_resnet: False
+    transformer_blocks: 1
+    dropout: 0.1
+    normalization: 'group'
+    normalization_groups: 16
+    attention_heads: 8
+    attention_head_dim: 16
+    depth_embedding: True
+
+    temb_channels: 128
+    label_mapping:
+      - LVEDV: 0
+      - LVESV: 1
+      - LVEF: 2
+      - RVEDV: 3
+      - RVESV: 4
+      - RVEF: 5
+      - MYOESTHICK: 6
+      - MYOEDTHICK: 7
+      - AGE: 8
+      - SEX: 9
+      - BMI: 10
+      - ESED: 11
+      - ANGLE: 12
+      - DEPTH: 13
+
+    max_labels: 14
+    context_dim: 16
+
+    first_stage_model:
+      module_name: model_zoo.autoencoder
+      class_name: KLAutoencoder
+      weights: './projects/cardiac_autoencoder/weights/kl_vae/<run>/latest_actual_model.pt'
+      params:
+        input_size: *target_size
+        input_dim: 3
+        sigmoid_out: True
+        layer_channels: 64
+        layer_multiplier:
+          - 1
+          - 2
+        layer_attention:
+          - False
+          - False
+        residual_blocks: 2
+        sample_resnet: False
+        dropout: 0.1
+        normalization: 'group'
+        normalization_groups: 16
+
+#
+# Trainer
+#
+trainer:
+  module_name: projects.cardiac_diffusion.Trainer
+  class_name: PTrainer
+  params:
+    differential_privacy:
+      target_delta: 1.0e-5
+      target_epsilon: 0.1
+      max_grad_norm: 1
+    start_epoch: 0
+    input_size: *target_size
+    checkpoint_path: *checkpoint_path
+    nr_epochs: 150
+    label_dropout: False
+    # Loss
+    loss:
+      module_name: optim.losses.ln_losses
+      class_name: L2
+      params:
+    optimizer_params:
+      lr: 1.0e-5
+  # Data Loader
+  data_loader:
+    module_name: data.cardiac_mri_loader3d
+    class_name: CardiacMRILoader
+    params:
+      data_path: 'path/to/data/folder'
+
+
+# Downstream tasks
+downstream_tasks:
+  test:
+    module_name: projects.cardiac_diffusion.DownstreamEvaluator
+    class_name: PDownstreamEvaluator
+    checkpoint_path: *checkpoint_path
+    data_loader:
+      module_name: data.cardiac_mri_loader3d
+      class_name: CardiacMRILoader
+      params:
+        data_path: 'path/to/data/folder'
+      datasets:
+        test:
+          classes:
+            - 'test'

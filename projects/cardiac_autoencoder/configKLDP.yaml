@@ -1,0 +1,93 @@
+name: KLVAE 4x DP e10
+target_size: &target_size !!python/tuple [1, 13, 96, 96]
+train_batch_size: &tbatch_size 32
+downstream_batch_size: &dbatch_size 64
+checkpoint_path: &checkpoint_path ./projects/cardiac_autoencoder/weights/kl_vae/
+#
+# Experiment
+#
+experiment:
+  name: Cardiac Autoencoder
+  task: train
+  weights: #'./projects/cardiac_autoencoder/weights/kl_vae/<run>/latest_model.pt'
+#
+device: gpu
+configurator:
+  module_name: core.Configurator
+  class_name: DLConfigurator
+  params:
+#
+# Model
+#
+model:
+  module_name: model_zoo.autoencoder
+  class_name: KLAutoencoder
+  params:
+    input_size: *target_size
+    input_dim: 3
+    sigmoid_out: True
+    layer_channels: 64
+    layer_multiplier:
+      - 1
+      - 2
+    layer_attention:
+      - False
+      - False
+    residual_blocks: 2
+    sample_resnet: False
+    dropout: 0.1
+    normalization: 'group'
+    normalization_groups: 16
+
+#
+# Trainer
+#
+trainer:
+  module_name: projects.cardiac_autoencoder.TrainerKL
+  class_name: PTrainer
+  params:
+    differential_privacy:
+      target_delta: 1.0e-5
+      target_epsilon: 10.0
+      max_grad_norm: 1
+    input_size: *target_size
+    checkpoint_path: *checkpoint_path
+    nr_epochs: 50
+    kld_gamma: 0.1
+    patchgan_channels:
+      - 16
+      - 8
+      - 8
+      - 8
+    patchgan_lr: 5.0e-6
+    across_channels: False
+    # Loss
+    loss:
+      module_name: optim.losses.ln_losses
+      class_name: L2
+      params:
+    optimizer_params:
+      lr: 1.0e-4
+  # Data Loader
+  data_loader:
+    module_name: data.cardiac_mri_loader3d
+    class_name: CardiacMRILoader
+    params:
+      data_path: 'path/to/data/folder'
+
+# Downstream tasks
+downstream_tasks:
+  test:
+    module_name: projects.cardiac_autoencoder.DownstreamEvaluator
+    class_name: PDownstreamEvaluator
+    checkpoint_path: *checkpoint_path
+    data_loader:
+      module_name: data.cardiac_mri_loader3d
+      class_name: CardiacMRILoader
+      params:
+        data_path: 'path/to/data/folder'
+      datasets:
+        test:
+          classes:
+            - test
+
