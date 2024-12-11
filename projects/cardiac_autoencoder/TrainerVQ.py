@@ -71,7 +71,10 @@ class PTrainer(Trainer):
                 self.optimizer.zero_grad()
 
                 x_recon, loss_vq = self.model(images)
-
+                
+                # logging.info(f'image size{images.shape},x_recon size{x_recon.shape}')
+                # image sizetorch.Size([32, 96, 96, 13]),x_recon sizetorch.Size([32, 96, 96, 12])
+                
                 # Calculate normal losses
                 loss_rec = self.criterion_rec(x_recon, images) * 1000
                 loss_pl = self.criterion_PL(x_recon, images) * 100
@@ -120,7 +123,7 @@ class PTrainer(Trainer):
             epoch_losses.append(epoch_loss)
 
             end_time = time()
-            print('Epoch: {} \tVAE Training Loss: {:.6f} , computed in {} seconds for {} samples'.format(
+            logging.info('Epoch: {} \tVAE Training Loss: {:.6f} , computed in {} seconds for {} samples'.format(
                 epoch, epoch_loss, end_time - start_time, count_images))
             self.log_to_wandb({"Train/Loss_": epoch_loss,
                        "Train/Loss_rec_": batch_loss_rec / count_images,

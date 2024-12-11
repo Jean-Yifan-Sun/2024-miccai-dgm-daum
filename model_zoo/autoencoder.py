@@ -47,11 +47,15 @@ class Decoder(nn.Module):
         layer_attention = config['layer_attention']
 
         self.decoder = nn.Sequential()
+        ics,ocs = [],[]
         for in_mul, out_mul, attn in zip(layer_multiplier[::-1], layer_multiplier[::-1][1:] + [1],
                                          layer_attention[::-1]):
             ic = in_mul * layer_channels
             oc = out_mul * layer_channels
             self.decoder.append(UpBlock(in_channels=ic, out_channels=oc, **config))
+            ics.append(ic)
+            ocs.append(oc)
+        # logging.info(f'ics: {ics}, ocs: {ocs}')
 
         out_projection = nn.Sequential(Normalization(in_channels=layer_channels, **config),
                                        nn.SiLU(),
@@ -248,15 +252,22 @@ class VQAutoencoder(Autoencoder):
                                            padding=0, **config)
 
     def encode(self, x: torch.Tensor):
+        # logging.info(f'encode input x shape: {x.shape}')
+        # input x shape: torch.Size([16, 96, 96, 13])
         x = super().encode(x)
+        # logging.info(f'x shape: {x.shape}')
+        # x shape: torch.Size([16, 64, 96, 48, 6])
         x = self.encoder_out(x)
         return x
 
     def decode(self, x: torch.Tensor, loss: bool = False):
+        # logging.info(f'decode input x shape: {x.shape}')
+        # input x shape: torch.Size([16, 1, 96, 48, 6])
         z = self.quant_conv(x)
         #z = x
         z_shape = z.shape
-
+        # logging.info(f'quant_conv z shape: {z_shape}')
+        # z shape: torch.Size([16, 4, 96, 48, 6])
         if self.input_dim == 30:
             assert len(z_shape) == 5
             B, C, D, H, W = z_shape
@@ -265,15 +276,18 @@ class VQAutoencoder(Autoencoder):
 
         z, l = self.quantize(z)
         l = l * 10
-
+        # logging.info(f'quantize z size: {z.shape}')
         if self.input_dim == 30:
             B, C, D, H, W = z_shape
             z = z.reshape(B, D, C, H, W).permute(0, 2, 1, 3, 4)
             # z = z.unsqueeze(1)
 
         z = self.post_quant_conv(z)
+        # logging.info(f'post_quant_conv z size: {z.shape}')
+        # z size: torch.Size([16, 64, 96, 48, 6])
         x = super().decode(z)
-
+        # logging.info(f'Decoder z size: {x.shape}')
+        # Decoder size: torch.Size([16, 96, 96, 12])
         if loss:
             return x, l
         else:
@@ -281,7 +295,9 @@ class VQAutoencoder(Autoencoder):
 
     def _forward(self, x: torch.Tensor):
         z = self.encode(x)
-        return self.decode(z, loss=True)
+        z = self.decode(z, loss=True)
+        # logging.info(f'Decoder size: {z.shape}')
+        return z
 
 
 

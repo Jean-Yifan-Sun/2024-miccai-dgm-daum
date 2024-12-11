@@ -1,6 +1,6 @@
 name: CardiacClassifier
 target_size: &target_size !!python/tuple [1, 13, 96, 96]
-train_batch_size: &tbatch_size 32
+train_batch_size: &tbatch_size 24
 downstream_batch_size: &dbatch_size 100
 checkpoint_path: &checkpoint_path ./projects/cardiac_classifier/weights/cardiac_classifier/
 #
@@ -20,10 +20,10 @@ configurator:
 # Model
 #
 model:
-  module_name: model_zoo.cardiac_classifier
-  class_name: CardiacClassifier
+  module_name: model_zoo.cardiac_segmentation
+  class_name: CardiacSegmentation3D
   params:
-    input_size: *target_size
+    input_size: *target_size 
     input_dim: 3
     layer_channels: 8
     layer_multiplier:
@@ -41,43 +41,44 @@ model:
     dropout: 0.1
     normalization: 'group'
     normalization_groups: 8
+    sigmoid_out: True
 
 #
 # Trainer
 #
 trainer:
   module_name: projects.cardiac_classifier.Trainer
-  class_name: PTrainer
+  class_name: PTrainer3D
   params:
     input_size: *target_size
     checkpoint_path: *checkpoint_path
-    nr_epochs: 20
-    esed_dim: 9
+    nr_epochs: 200
+    esed_dim: 12
     # Loss
     loss:
       module_name: torch.nn
       class_name: BCEWithLogitsLoss
       params:
     optimizer_params:
-      lr: 1.0e-5
+      lr: 1.0e-3
   # Data Loader
   data_loader:
     module_name: data.cardiac_mri_loader3d
     class_name: CardiacMRILoader
     params:
-      data_path: 'path/to/data/folder'
+      data_path: '/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/data/ACDC/database/data/Labeled'
 
 # Downstream tasks
 downstream_tasks:
   test:
     module_name: projects.cardiac_classifier.DownstreamEvaluator
-    class_name: PDownstreamEvaluator
+    class_name: PDownstreamEvaluator3D
     checkpoint_path: *checkpoint_path
     data_loader:
       module_name: data.cardiac_mri_loader3d
       class_name: CardiacMRILoader
       params:
-        data_path:  'path/to/data/folder'
+        data_path:  '/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/data/ACDC/database/data/Labeled'
       datasets:
         test:
           classes:

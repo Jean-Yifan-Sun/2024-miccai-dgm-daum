@@ -102,7 +102,7 @@ class PTrainer(Trainer):
                 if self.training_params['label_dropout']:
                     if random() > 0.9:
                         labels = None
-
+                # logging.info(f'Label: {labels}')
                 epsilon_pred, epsilon, t = self.model(images, labels, mask)
 
                 # Reconstruction loss

@@ -123,7 +123,7 @@ class PTrainer(Trainer):
             epoch_losses.append(epoch_loss)
 
             end_time = time()
-            print('Epoch: {} \tVAE Training Loss: {:.6f} , computed in {} seconds for {} samples'.format(
+            logging.info('Epoch: {} \tVAE Training Loss: {:.6f} , computed in {} seconds for {} samples'.format(
                 epoch, epoch_loss, end_time - start_time, count_images))
             self.log_to_wandb({"Train/Loss_": epoch_loss,
                        "Train/Loss_rec_": batch_loss_rec / count_images,

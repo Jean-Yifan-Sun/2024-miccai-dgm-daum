@@ -83,6 +83,7 @@ class Trainer:
         self.training_params = training_params
 
         self.train_ds, self.val_ds, self.test_ds = data.train_dataloader(), data.val_dataloader(), data.test_dataloader()
+        # logging.info(f'train loader: {len(self.train_ds)}, val loader: {self.val_ds}, test loader: {self.test_ds}')
         self.num_train_samples = len(self.train_ds) * self.train_ds.batch_size
 
         self.device = device

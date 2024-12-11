@@ -2,7 +2,7 @@ name: VQVAE 4x DP e10
 target_size: &target_size !!python/tuple [1, 13, 96, 96]
 train_batch_size: &tbatch_size 32
 downstream_batch_size: &dbatch_size 64
-checkpoint_path: &checkpoint_path ./projects/cardiac_autoencoder/weights/vq_vae/
+checkpoint_path: &checkpoint_path ./projects/cardiac_autoencoder/weights/vq_vae_dp/
 #
 # Experiment
 #
@@ -74,7 +74,7 @@ trainer:
     module_name: data.cardiac_mri_loader3d
     class_name: CardiacMRILoader
     params:
-      data_path: 'path/to/data/folder'
+      data_path: '/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/data/ACDC/database'
 
 # Downstream tasks
 downstream_tasks:
@@ -86,7 +86,7 @@ downstream_tasks:
       module_name: data.cardiac_mri_loader3d
       class_name: CardiacMRILoader
       params:
-        data_path: 'path/to/data/folder'
+        data_path: '/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/data/ACDC/database'
       datasets:
         test:
           classes:

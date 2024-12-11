@@ -1,0 +1,9 @@
+/data/
+*.out
+*.stats
+*.pyc
+*.nii.gz
+.DS_Store
+/wandb/
+*.pt
+*.npy

@@ -25,7 +25,7 @@ class CardiacMRIDatset(torch.utils.data.Dataset):
         path = self.paths[idx]
 
         try:
-            data = np.load(path)
+            data = np.load(path,allow_pickle=True).item()
             image = data['image']
             labels = data['labels']
         except Exception as e:
@@ -58,7 +58,7 @@ class CardiacMRILoader(pl.LightningDataModule):
             self.train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
-            drop_last=True,
+            drop_last=False,
             pin_memory=True,
             num_workers=4
         )
@@ -70,7 +70,7 @@ class CardiacMRILoader(pl.LightningDataModule):
             self.val_dataset,
             batch_size=self.batch_size,
             shuffle=True,
-            drop_last=True,
+            drop_last=False,
             pin_memory=True,
             num_workers=4
         )
@@ -82,7 +82,7 @@ class CardiacMRILoader(pl.LightningDataModule):
             self.test_dataset,
             batch_size=self.batch_size,
             shuffle=True,
-            drop_last=True,
+            drop_last=False,
             pin_memory=True,
             num_workers=4
         )

@@ -9,7 +9,7 @@ checkpoint_path: &checkpoint_path ./projects/cardiac_diffusion/weights/cardiac_d
 experiment:
   name: Cardiac Diffusion
   task: train
-  weights: # './projects/cardiac_diffusion/weights/cardiac_diffusion/<run>/latest_model.pt'
+  weights:  './projects/cardiac_diffusion/weights/cardiac_diffusion/2024_10_31_18_52_25_220978/latest_model.pt'
 #
 device: gpu
 configurator:
@@ -68,12 +68,12 @@ model:
       - DEPTH: 13
 
     max_labels: 14
-    context_dim: 16
+    context_dim: 0
 
     first_stage_model:
       module_name: model_zoo.autoencoder
       class_name: KLAutoencoder
-      weights: './projects/cardiac_autoencoder/weights/kl_vae/<run>/latest_actual_model.pt'
+      weights: './projects/cardiac_autoencoder/weights/kl_vae/2024_10_26_00_46_12_578577/latest_actual_model.pt'
       params:
         input_size: *target_size
         input_dim: 3
@@ -114,7 +114,7 @@ trainer:
     module_name: data.cardiac_mri_loader3d
     class_name: CardiacMRILoader
     params:
-      data_path: 'path/to/data/folder'
+      data_path: '/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/data/ACDC/database'
 
 
 # Downstream tasks
@@ -127,8 +127,13 @@ downstream_tasks:
       module_name: data.cardiac_mri_loader3d
       class_name: CardiacMRILoader
       params:
-        data_path: 'path/to/data/folder'
+        data_path: '/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/data/ACDC/database'
       datasets:
         test:
           classes:
-            - 'test'
+            - [1, 0, 0, 0, 0]
+            - [0, 1, 0, 0, 0]
+            - [0, 0, 1, 0, 0]
+            - [0, 0, 0, 1, 0]
+            - [0, 0, 0, 0, 1]
+          # Label mapping: {'LVEDV': 0, 'LVESV': 1, 'LVEF': 2, 'RVEDV': 3, 'RVESV': 4, 'RVEF': 5, 'MYOESTHICK': 6, 'MYOEDTHICK': 7, 'AGE': 8, 'SEX': 9, 'BMI': 10, 'ESED': 11, 'ANGLE': 12, 'DEPTH': 13}

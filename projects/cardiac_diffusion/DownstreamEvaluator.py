@@ -51,7 +51,7 @@ class PDownstreamEvaluator(DownstreamEvaluator):
                                                     normalization='group',
                                                     normalization_groups=8)
 
-        classifier_path = './projects/cardiac_classifier/weights/cardiac_classifier/2024_03_25_15_59_53_265088/latest_model.pt'
+        classifier_path = './projects/cardiac_classifier/weights/cardiac_classifier/2024_10_31_17_44_34_267009/latest_model.pt'
         checkpoint = torch.load(classifier_path, map_location=torch.device(self.device))
         self.cardiac_classifier.load_state_dict(checkpoint['model_weights'])
         self.cardiac_classifier.to(self.device)
@@ -80,6 +80,7 @@ class PDownstreamEvaluator(DownstreamEvaluator):
             ### CALCULATE METRICS ###
             for i, data in enumerate(dataset):
                 images, labels = data
+                # logging.info(f'labels: {labels}')
                 labels = labels.to(self.device)
                 images = images.to(self.device)
 
@@ -116,6 +117,8 @@ class PDownstreamEvaluator(DownstreamEvaluator):
                 actual_labels.extend(actual)
                 predicted_labels.extend(predicted)
 
+                logging.info(f'labels: {labels.shape}, ESED_index: {ESED_index}, labels_pred: {labels_pred}')
+
                 if i == 0:
                     self.evaluate_noising_denoising(images, labels)
 
@@ -128,6 +131,8 @@ class PDownstreamEvaluator(DownstreamEvaluator):
 
                     # Filter images for ED
                     ed_mask = labels[:, ESED_index] == 1
+
+                    logging.info(f'labels: {labels.shape}, es_mask: {es_mask.shape}, ed_mask: {ed_mask.shape}')
                     generated_images_ed = generated_images[ed_mask]
 
                     if len(generated_images_es) > 0:

@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch
 from typing import Dict, List
-
+import logging
 from net_utils.diffusion.attention import SelfAttention
 
 
@@ -15,7 +15,7 @@ class AttributeTransformer(nn.Module):  # Poor naming, not an actual transformer
 
         self.label_mapping = {list(e.keys())[0]: list(e.values())[0] for e in label_mapping}
         print("label_mapping: ", self.label_mapping)
-
+        logging.info(f'Label mapping: {self.label_mapping}')
         self.max_labels = max_labels
         if self.max_labels <= 0:
             # Only one embedding linear layer

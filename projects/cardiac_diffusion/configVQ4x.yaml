@@ -68,12 +68,12 @@ model:
       - DEPTH: 13
 
     max_labels: 14
-    context_dim: 16
+    context_dim: 0
 
     first_stage_model:
       module_name: model_zoo.autoencoder
       class_name: VQAutoencoder
-      weights: './projects/cardiac_autoencoder/weights/vq_vae/<run>/latest_actual_model.pt'
+      weights: './projects/cardiac_autoencoder/weights/vq_vae/2024_10_25_16_41_01_918843/latest_actual_model.pt'
       params:
         input_size: *target_size
         input_dim: 3
@@ -117,7 +117,7 @@ trainer:
     module_name: data.cardiac_mri_loader3d
     class_name: CardiacMRILoader
     params:
-      data_path: 'path/to/data/folder'
+      data_path: '/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/data/ACDC/database'
 
 
 
@@ -131,8 +131,12 @@ downstream_tasks:
       module_name: data.cardiac_mri_loader3d
       class_name: CardiacMRILoader
       params:
-        data_path: 'path/to/data/folder'
+        data_path: '/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/data/ACDC/database'
       datasets:
         test:
           classes:
-            - 'test'
+            - [1, 0, 0, 0, 0]
+            - [0, 1, 0, 0, 0]
+            - [0, 0, 1, 0, 0]
+            - [0, 0, 0, 1, 0]
+            - [0, 0, 0, 0, 1]
