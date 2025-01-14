@@ -3,7 +3,7 @@ from time import time
 import wandb
 import logging
 import torch
-
+import numpy as np
 from dl_utils.image_utils import make_comparison_grid, make_grid
 
 class PTrainer3D(Trainer):
@@ -336,3 +336,46 @@ class PTrainer2D(Trainer):
 
         return metrics
 
+
+
+class EarlyStopping:
+    def __init__(self, patience=5, delta=0, verbose=False, path='checkpoint.pth'):
+        """
+        Args:
+            patience (int): How many epochs to wait after the last improvement.
+            delta (float): Minimum change in the monitored quantity to qualify as an improvement.
+            verbose (bool): Whether to print updates.
+            path (str): File path to save the best model.
+        """
+        self.patience = patience
+        self.delta = delta
+        self.verbose = verbose
+        self.path = path
+        self.counter = 0
+        self.best_score = None
+        self.early_stop = False
+        self.val_loss_min = np.Inf
+
+    def __call__(self, val_loss, model):
+        score = -val_loss
+
+        if self.best_score is None:
+            self.best_score = score
+            self.save_checkpoint(val_loss, model)
+        elif score < self.best_score + self.delta:
+            self.counter += 1
+            if self.verbose:
+                print(f"EarlyStopping counter: {self.counter} out of {self.patience}")
+            if self.counter >= self.patience:
+                self.early_stop = True
+        else:
+            self.best_score = score
+            self.save_checkpoint(val_loss, model)
+            self.counter = 0
+
+    def save_checkpoint(self, val_loss, model):
+        """Saves the model when the validation loss decreases."""
+        if self.verbose:
+            print(f"Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...")
+        torch.save(model.state_dict(), self.path)
+        self.val_loss_min = val_loss

@@ -1,18 +1,24 @@
 #!/bin/bash
-#SBATCH --qos=bbgpu
-#SBATCH --account=chenhp-dpmodel
-#SBATCH --time=2:00:00
-#SBATCH --gres=gpu:a100:1
-#SBATCH --mem=300G
-module purge; module load bluebear
-module load bear-apps/2022b/live
-module load Miniforge3/24.1.2-0
-
+#SBATCH --account=qingjiem-heart-tte
+#SBATCH --qos=bham
+#SBATCH --time=10:00:00
+#SBATCH --nodes 1
+#SBATCH --gres gpu:1
+#SBATCH --gpus-per-task 1
+#SBATCH --tasks-per-node 1
+#SBATCH --constraint=a100_40
+#SBATCH --mem=64G  # 请求内存
 
 script_name="acdc_classifier"
+set -e
+module purge
+module load baskerville
 
-source activate /rds/projects/c/chenhp-dpmodel/conda_envs
-cd /rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum
-
+# 运行 Python 命令
+source /bask/projects/q/qingjiem-heart-tte/yifansun/conda/miniconda/etc/profile.d/conda.sh
+conda init
+conda activate miccai24
+conda info --envs
+cd /bask/projects/q/qingjiem-heart-tte/yifansun/project/2024-miccai-dgm-daum
 export PYTHONPATH=$PYTHONPATH:$(pwd)
-python core/Main.py --config_path projects/cardiac_classifier/config2D.yaml >output/$script_name.out
+nohup python core/Main.py --config_path projects/cardiac_classifier/config2d.yaml >output/$script_name.out

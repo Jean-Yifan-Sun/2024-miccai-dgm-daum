@@ -92,9 +92,9 @@ class PDownstreamEvaluator(DownstreamEvaluator):
         df_metrics = pd.DataFrame(list([metrics.values()]), columns=list(metrics.keys()))
         tbl = wandb.Table(data=df_metrics)
         wandb.log({f"Test/Metrics": tbl})
-        df_metrics.to_csv(f'/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/projects/cardiac_autoencoder/Test_Metrics_{self.name}.csv')
-        save_imgs(self.all_imgs,f'/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/projects/cardiac_autoencoder/{self.name}Images')
-        save_imgs(self.all_recons,f'/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/projects/cardiac_autoencoder/{self.name}Recons')
+        df_metrics.to_csv(f'./projects/cardiac_autoencoder/Test_Metrics_{self.name}.csv')
+        save_imgs(self.all_imgs,f'./projects/cardiac_autoencoder/{self.name}Images')
+        save_imgs(self.all_recons,f'./projects/cardiac_autoencoder/{self.name}Recons')
 
 
 def calculate_miou(pred_mask, true_mask, num_classes):

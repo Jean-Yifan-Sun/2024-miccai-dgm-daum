@@ -67,7 +67,7 @@ class PDownstreamEvaluator3D(DownstreamEvaluator):
 
         all_preds = []
         all_labels = []
-
+        all_imgs = []
         test_total = 0
         with torch.no_grad():
             for idx, data in enumerate(dataset):
@@ -81,7 +81,7 @@ class PDownstreamEvaluator3D(DownstreamEvaluator):
                 labels_pred = self.model(images)
                 
                 labels_pred = (labels_pred > 0).int()
-
+                all_imgs.append(images.cpu())
                 all_preds.append(labels_pred.cpu())
                 all_labels.append(labels.cpu().int())
 
@@ -126,8 +126,9 @@ class PDownstreamEvaluator3D(DownstreamEvaluator):
             miou = calculate_miou(all_preds[i],all_labels[i],num_classes=2)
             dice = calculate_dice(all_preds[i],all_labels[i])
             logging.info(f'miou: {miou}, dice: {dice}')
-        save_imgs(all_labels,'/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/projects/cardiac_classifier/output3d/labels')
-        save_imgs(all_preds,'/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/projects/cardiac_classifier/output3d/preds')
+        save_imgs(all_labels,'./projects/cardiac_classifier/output3d/labels')
+        save_imgs(all_preds,'./projects/cardiac_classifier/output3d/preds')
+        save_imgs(all_imgs,'./projects/cardiac_classifier/output3d/imgs')
 
 
 class PDownstreamEvaluator2D(DownstreamEvaluator):
@@ -181,7 +182,7 @@ class PDownstreamEvaluator2D(DownstreamEvaluator):
 
         all_preds = []
         all_labels = []
-
+        all_imgs = []
         test_total = 0
         with torch.no_grad():
             for idx, data in enumerate(dataset):
@@ -201,7 +202,7 @@ class PDownstreamEvaluator2D(DownstreamEvaluator):
                
                 
                 labels_pred = (labels_pred > 0).int()
-
+                all_imgs.append(images.cpu())
                 all_preds.append(labels_pred.cpu())
                 all_labels.append(labels.cpu().int())
 
@@ -246,8 +247,9 @@ class PDownstreamEvaluator2D(DownstreamEvaluator):
             miou = calculate_miou(all_preds[i],all_labels[i],num_classes=2)
             dice = calculate_dice(all_preds[i],all_labels[i])
             logging.info(f'miou: {miou}, dice: {dice}')
-        save_imgs(all_labels,'/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/projects/cardiac_classifier/output/labels')
-        save_imgs(all_preds,'/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/projects/cardiac_classifier/output/preds')
+        save_imgs(all_labels,'./projects/cardiac_classifier/output2d/labels')
+        save_imgs(all_preds,'./projects/cardiac_classifier/output2d/preds')
+        save_imgs(all_imgs,'./projects/cardiac_classifier/output2d/imgs')
 
 
 
@@ -295,7 +297,10 @@ def calculate_miou(pred_mask, true_mask, num_classes):
         else:
             iou = intersection / union
 
-        miou.append(iou.item())
+        try:
+            miou.append(iou.item())
+        except:
+            miou.append(iou)
     return sum(miou) / len(miou)
 
 def calculate_dice(prediction, ground_truth):

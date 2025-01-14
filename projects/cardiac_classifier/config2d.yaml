@@ -21,7 +21,7 @@ configurator:
 #
 model:
   module_name: model_zoo.cardiac_segmentation
-  class_name: CardiacSegmentation3D
+  class_name: CardiacSegmentation2D
   params:
     input_size: *target_size 
     input_dim: 3
@@ -48,11 +48,11 @@ model:
 #
 trainer:
   module_name: projects.cardiac_classifier.Trainer
-  class_name: PTrainer3D
+  class_name: PTrainer2D
   params:
     input_size: *target_size
     checkpoint_path: *checkpoint_path
-    nr_epochs: 200
+    nr_epochs: 125
     esed_dim: 12
     # Loss
     loss:
@@ -60,25 +60,25 @@ trainer:
       class_name: BCEWithLogitsLoss
       params:
     optimizer_params:
-      lr: 1.0e-3
+      lr: 1.0e-4
   # Data Loader
   data_loader:
     module_name: data.cardiac_mri_loader3d
     class_name: CardiacMRILoader
     params:
-      data_path: '/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/data/ACDC/database/data/Labeled'
+      data_path: './data/ACDC/database/data/Labeled'
 
 # Downstream tasks
 downstream_tasks:
   test:
     module_name: projects.cardiac_classifier.DownstreamEvaluator
-    class_name: PDownstreamEvaluator3D
+    class_name: PDownstreamEvaluator2D
     checkpoint_path: *checkpoint_path
     data_loader:
       module_name: data.cardiac_mri_loader3d
       class_name: CardiacMRILoader
       params:
-        data_path:  '/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/data/ACDC/database/data/Labeled'
+        data_path:  './data/ACDC/database/data/Labeled'
       datasets:
         test:
           classes:

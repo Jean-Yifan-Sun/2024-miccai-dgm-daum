@@ -71,7 +71,7 @@ trainer:
     module_name: data.cardiac_mri_loader3d
     class_name: CardiacMRILoader
     params:
-      data_path: '/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/data/ACDC/database/data/Unlabeled'
+      data_path: ./data/ACDC/database/data/Unlabeled
 
 # Downstream tasks
 downstream_tasks:
@@ -83,7 +83,7 @@ downstream_tasks:
       module_name: data.cardiac_mri_loader3d
       class_name: CardiacMRILoader
       params:
-        data_path: '/rds/projects/c/chenhp-dpmodel/2024-miccai-dgm-daum/data/ACDC/database/data/Unlabeled'
+        data_path: ./data/ACDC/database/data/Unlabeled
       datasets:
         test:
           classes:
